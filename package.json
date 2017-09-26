@@ -1,0 +1,23 @@
+{
+  "name": "y",
+  "version": "0.0.1",
+  "description": "Media Manager para Vue usador por el Blank App de El Cultivo",
+  "main": "media-manager.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vueJS",
+    "vue",
+    "media",
+    "manager"
+  ],
+  "author": "Diego Villaseñor",
+  "license": "ISC",
+  "devDependencies": {
+    "coral-fs-tasks": "1.1.1",
+    "express": "4.15.5",
+    "multer": "1.3.0",
+    "pug": "2.0.0-rc.4"
+  }
+}
