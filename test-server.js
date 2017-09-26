@@ -10,7 +10,9 @@ app.set('views', './')
 app.set('view engine', 'pug')
 
 app.get('/', function (req, res) {
-  res.render('index')
+   readAsText('utf8')('./photos.json')
+    .map(JSON.parse)
+    .fork(console.log, photos=> res.render('index', {photos}))
 })
 
 app.post('/api/save', upload.single('file_input'),function (req, res) {
@@ -34,6 +36,4 @@ app.post('/api/save', upload.single('file_input'),function (req, res) {
 
 app.listen(3000, function () {
   console.log('Listening on 3000');
-
-
 })
