@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import VSelect from '../src/v-select.vue'
 
 const myImportedComponent = (template) => Vue.extend({//en realidad lo impotaríamos así: import {myComponent} from '../vue/components/my-component'
 	template,
@@ -12,7 +13,7 @@ const myImportedComponent = (template) => Vue.extend({//en realidad lo impotarí
 })
 
 
-describe('sample-vue', () => {
+xdescribe('sample-vue', () => {
 	let vm = {}
 	let componentTemplate = `<div></div>`//en un contexto  de uso real puede ser un id,  en un test muchas veces con pasar un div vacío nos basta
 	let component;
@@ -47,16 +48,16 @@ describe('sample-vue', () => {
 		spyOn(vm, 'post')
 	}) 
 	
-	fit('mi prop se llama proppy', function() {
+	it('mi prop se llama proppy', function() {
 		expect(component.my_prop).toEqual('me llamo proppy');
 	});
 
-	fit('mi prop recibe la propiedad last_name', function() {
+	it('mi prop recibe la propiedad last_name', function() {
 		expect(component.lastName).toEqual('the Prop');
 	});
 
 	//Ejemplo Importante!!!!!
-	fit('le cambio asincrónicamente el valor a proppy', function(done) {// para todo lo asíncrono, y en Vue hay mucho usamos done y Vue.nextTick
+	it('le cambio asincrónicamente el valor a proppy', function(done) {// para todo lo asíncrono, y en Vue hay mucho usamos done y Vue.nextTick
 		component.my_prop = 'asyncProp'
 		Vue.nextTick(()=> {
 			expect(component.my_prop).toEqual('asyncProp');
