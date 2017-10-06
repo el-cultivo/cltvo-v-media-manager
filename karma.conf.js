@@ -20,7 +20,7 @@ module.exports = function(config) {
             'test-context.js': ['webpack', 'sourcemap']
         },
 
-        reporters: reporters(process.env.REPORTERS),
+        // reporters: reporters(process.env.REPORTERS),
 
         coverageIstanbulReporter: {
             dir: 'coverage/',

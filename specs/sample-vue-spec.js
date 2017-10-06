@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import VSelect from '../src/v-select.vue'
 
 const myImportedComponent = (template) => Vue.extend({//en realidad lo impotaríamos así: import {myComponent} from '../vue/components/my-component'
 	template,
