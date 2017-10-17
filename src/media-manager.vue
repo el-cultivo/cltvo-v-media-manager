@@ -1,25 +1,61 @@
 <script>
-  import {path, pathOr} from 'ramda'
+  const defaultChosenImage = {src:'', id:'', languages:[], en: {}, es: {}, index:'', photoable_id:'', photoable_type:'', use:'', class:'', order:''}
+
+  import {path, pathOr, compose} from 'ramda'
+  import {numericalObjSort, objTextFilter} from 'coral-std-library'
+
   export default {
     data() {
       return {
+        store: {},
         display: 'none',
         hola: 'mundo',
         photos: [],
+        chosen_image: defaultChosenImage,
+        file_input: '',
         DnDEvents: {
           bin: ''
-        }
+        },
+        search: '',
+        sort_by: 'desc',
+        sort_types: [
+          {value: 'desc', name: {es: 'más recientes'}},
+          {value: 'asc', name: {es: 'más antiguas'}}
+        ],
+      }
+    },
+
+    ready() {
+      this.store = this.$root.store
+    },
+
+    computed: {
+      filterableAndSortablePhotos() {
+        let photos = compose(
+          numericalObjSort(['updated_at'], this.sort_by), 
+          objTextFilter(['title'], this.search)
+        )(this.photos);
+        return photos
+      },
+
+      singleImageRoute() {
+        return compose(
+          route => id => route+'/'+id,
+          pathOr('', ['store', 'media_manager', 'routes', 'single_image'])
+        )(this)
       }
     },
 
     methods: {
       open() {
         this.display = 'block'
-        this. getPhotos()
+        this.getPhotos()
       },
+
       close() {
         this.display = 'none'
       },
+      
       
       getPhotos() {
         const root = this.$root
@@ -35,7 +71,7 @@
       onGetPhotosSuccess(body) {
         this.photos = pathOr([], ['data', 'photos'], body)                    
       },
-      
+    
       onGetPhotosError(body) {
         this.$root.alertError(body)
       },
@@ -48,6 +84,25 @@
         this.post(document.getElementById(form_id));
       },
 
+      onCreateSuccess(body, input) {
+        this.photos.unshift(body.data);
+  			input.reset();
+      },
+
+      chooseImage(id) {
+        this.getChosenImage(this.singleImageRoute(id))
+      },
+
+      getChosenImage(route) {
+        this.$root.get(route, {
+          success: 'onGetChosenImageDataSuccess',
+          error: 'onGetChosenImageDataError'
+        })
+      },
+
+      onGetChosenImageDataSuccess(body) {
+        this.chosen_image = body
+      }
     }   
   }    
 </script>
@@ -60,23 +115,13 @@
         :style="{'backgroundImage': 'url('+image.thumbnail_url+')'}"
       )
 
-      form#create_photo_form.input__file.media-manager__file-container(
-        method="POST"
-        :action="undefined"
-        role="form"
-        v-on:submit.prevent="post"
-      )
-        label#file_input-label(for="file_input")
-          span.fa.fa-camera.media-manager__icon-camera(v-if="DnDEvents.bin === ''")
-          span.media-manager__icon-camera.media-manager__icon-camera--add(v-if="DnDEvents.bin === ''") Agregar
-          span.media-manager__icon-camera.media-manager__icon-camera--change.media-manager__icon-camera--change(v-if="DnDEvents.bin === ''") Cambiar
-        input#media-manager__droppable-input.hide-input.hide-button.media-manager__droppable-input(
-          v-model="file_input"
-          v-on:change="makePost"
-          form="create_photo_form"
-          type="file" 
-          required="true"
-        )
+
+      include forms/create-photo
+      
+      include forms/update-photo
+      
+      include forms/delete-photo
+
 </template>
 
 <style>

@@ -1,0 +1,20 @@
+form#create_photo_form.input__file.media-manager__file-container(
+  method="POST"
+  :action="createRoute"
+  role="form"
+  v-on:submit.prevent="post"
+)
+  input(type="hidden" name="_method" value="POST")
+  input(type="hidden" name="_token" v-model="store.csrf_token")
+
+  label#file_input-label(for="file_input")
+    span.fa.fa-camera.media-manager__icon-camera(v-if="DnDEvents.bin === ''")
+    span.media-manager__icon-camera.media-manager__icon-camera--add(v-if="DnDEvents.bin === ''") Agregar
+    span.media-manager__icon-camera.media-manager__icon-camera--change.media-manager__icon-camera--change(v-if="DnDEvents.bin === ''") Cambiar
+  input#media-manager__droppable-input.hide-input.hide-button.media-manager__droppable-input(
+    form="create_photo_form"
+    type="text" 
+    required="true"
+    v-on:change="makePost('create_photo_form')"
+    v-model="file_input"
+  )

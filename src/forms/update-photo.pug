@@ -1,0 +1,43 @@
+form#update_photo_form(
+  method="POST"
+  role="form"
+  v-on:submit.prevent="post"
+)
+  //- :action="updateRoute"
+  input(type="hidden" name="_method" value="PATCH")
+  input(type="hidden" name="_token" v-model="store.csrf_token")  
+
+  input.form-control.input-sm.input.update_title_input(
+    v-for="lang in store.languages"
+    v-model="chosen_image[lang.iso6391+'_title']"
+    :id="'update_photo_title'+lang.iso6391"
+    :name="'title['+lang.iso6391+']'"
+    :placeholder="lang.name"
+    form="update_photo_form"
+    type="text"
+  )
+
+  input.form-control.input-sm.input.update_alt_input(
+    v-for="lang in store.languages"
+    v-model="chosen_image[lang.iso6391+'_alt']"
+    :id="'update_photo_alt'+lang.iso6391"
+    :name="'alt['+lang.iso6391+']'"
+    :placeholder="lang.name"
+    form="update_photo_form"
+    type="text"
+  )
+
+  textarea.form-control.input-sm.input.update_description_input(
+    v-for="lang in store.languages"
+    v-model="chosen_image[lang.iso6391+'_description']"
+    :id="'update_photo_description'+lang.iso6391"
+    :name="'description['+lang.iso6391+']'"
+    :placeholder="lang.name"
+    rows="2"
+    form="update_photo_form"
+  )
+
+  input.btn.btn-primary.input-sm.input.input__submit(
+    type="submit"
+    form="update_photo_form"
+  )
