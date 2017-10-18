@@ -167,6 +167,7 @@
 </script>
 
 <template lang="pug">
+  include forms/photos-association-forms
   #media-manager(:style="{'display': display}")
     #media-manager-images-container
       .media-manager__image(
@@ -180,11 +181,10 @@
       
       include forms/delete-photo
 
-      include forms/associate-photo
       +photo_assoc_form('associate_photo_form', 'POST', 'associateUrl')
+
       +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')
       
-      //- include forms/disassociate-photo
       
 </template>
 
