@@ -5,15 +5,23 @@ import {photos} from './media-manager/photos'
 const tick = Vue.nextTick
 
 fdescribe('MediaManager', () => {
-	const DummyComponent = {
+	const DummyComponent = Vue.extend({
 		template: `<div></div>`,
+		data() {
+			return {
+				component_name: 'Dummy'
+			}
+		},
 		methods: {
+			getName() {
+				return this.component_name
+			},
+
 			callMM() {
-				console.log('corre')
 				this.$dispatch('callMediaManager', 'DummyComponent', this)
 			}
 		}
-	}
+	})
 	
 	let vm = {}
 	let MM = {}
@@ -24,8 +32,8 @@ fdescribe('MediaManager', () => {
 			replace:false,//no es necesario fuera del test, es sólo para cuando usamos el método mount sobre el body
 			template: `
 			<div id="main-vue">
-			<media-manager></media-manager>
-			<dummy-component></dummy-component>
+			<media-manager v-ref:media_manager></media-manager>
+			<dummy-component v-ref:dummy></dummy-component>
 			</div>`,//metemos nuestro componente en el template de la instancia e Vue.  Como se ve podemos pasar props
 			mixins: [],
 			// ready() {console.log(this.$children);},
@@ -74,8 +82,7 @@ fdescribe('MediaManager', () => {
 			},
 			events: {
 				callMediaManager(component_name, component) {
-					console.log('recibe')
-					this.$broadcast('callMediaManager', component_name, component)
+					this.$broadcast('callMediaManagerBroadcast', component_name, component)
 				}
 			}
 		}).$mount('body')//esto tambien es para el test
@@ -140,12 +147,12 @@ fdescribe('MediaManager', () => {
 			})
 		})
 		
-		it('puede mostrar las imágenes una vez que existan en this.$root.store.photos', (done) => {
+		fit('puede mostrar las imágenes una vez que existan en this.$root.store.photos', (done) => {
 			MM.open()
 			tick(() =>{
 				let images = $('.media-manager__image')
 				
-				let urls = images.map((i, el) => $(el).css('background-image').replace('url(', '').replace(')', '')).toArray()
+				let urls = images.map((i, el) => $(el).css('background-image').replace('url(', '').replace(')', '').replace(/\"/g, '')).toArray()
 				
 				expect(images.length).toEqual(MM.photos.length)
 				
@@ -369,12 +376,11 @@ fdescribe('MediaManager', () => {
 
 	describe('Interacción con otros componentes', ()=>{
 		describe('Invocación por parte de un componente', () => {
-			it('puede ser abierto por un componente', (done) => {
-				// vm.$broadcast('callMediaManager', {name: 'dummy component'})
+			fit('puede ser abierto por un componente', (done) => {
 				DummyMediaComponent.callMM()
 				tick(() => {
 					expect(MM.display).toEqual('block')
-					expect(MM.active_calling_component).toEqual(DummyMediaComponent)
+					expect(MM.active_calling_component.component_name).toEqual(DummyMediaComponent.component_name)// no corremos un test de igualdad del objeto, porque karma crashea
 					done()
 				})
 			});

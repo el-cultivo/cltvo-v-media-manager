@@ -14,6 +14,8 @@
     return route.split(':id').join(id)
   }
 
+  let active_calling_component = {}
+
   export default {
     data() {
       return {
@@ -121,15 +123,15 @@
 
       onGetChosenImageDataSuccess(body) {
         this.chosen_image = body
-      }
+      },
+
+      onAssociateSuccess(body, input) {
+        this.active_calling_component.associateMedia(body.data)//pasamos la imagen asociada
+      },
     },
 
-    associateMedia(id) {
-      
-    },
-    
     events: {
-      callMediaManager(component) {
+      callMediaManagerBroadcast(component_name, component) {
         this.active_calling_component = component
         this.open()
       },
@@ -140,9 +142,8 @@
           gallery: this.associateImage
         }[component_type] || (x => console.log('hubo un error, el componente '+ component_type + 'no tiene una respuesta asociada para [associateMedia], o fue llamado con los argumentos incorrectos ' + x))
       }
-    }
   }    
-
+}
 </script>
 
 <template lang="pug">

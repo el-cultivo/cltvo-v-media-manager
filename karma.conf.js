@@ -5,6 +5,7 @@ module.exports = function(config) {
     config.set({
         loggers: [{type: 'console', pattern: '%d{HH:mm:ss} %m'}],
         browsers: browsers(process.env.BROWSERS),
+        // browsers: ['Chrome'],
 
         files: [
             './node_modules/jquery/dist/jquery.js',
