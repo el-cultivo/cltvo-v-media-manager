@@ -5,15 +5,27 @@ import {photos} from './media-manager/photos'
 const tick = Vue.nextTick
 
 fdescribe('MediaManager', () => {
+	const DummyComponent = {
+		template: `<div></div>`,
+		methods: {
+			callMM() {
+				console.log('corre')
+				this.$dispatch('callMediaManager', 'DummyComponent', this)
+			}
+		}
+	}
+	
 	let vm = {}
-	let MM;
-
+	let MM = {}
+	let DummyMediaComponent ={}
+	
 	beforeEach(() => {//Configuración previa al test
 		vm = new Vue({//creamos una instancia de Vue que nos sirva para el test
 			replace:false,//no es necesario fuera del test, es sólo para cuando usamos el método mount sobre el body
 			template: `
 			<div id="main-vue">
-				<media-manager></media-manager>
+			<media-manager></media-manager>
+			<dummy-component></dummy-component>
 			</div>`,//metemos nuestro componente en el template de la instancia e Vue.  Como se ve podemos pasar props
 			mixins: [],
 			// ready() {console.log(this.$children);},
@@ -22,12 +34,12 @@ fdescribe('MediaManager', () => {
 					media_manager: {
 						routes: {
 							index: 'http://blaa.com/api/photos',
-							single_image: 'http://blaa.com/api/photos',
+							single_image: 'http://blaa.com/api/photos/:id',
 							create: 'http://blaa.com/api/photos',
-							update: 'http://blaa.com/api/photos',
-							delete: 'http://blaa.com/api/photos',
-							associate: 'http://blaa.com/api/photos',
-							disassociate: 'http://blaa.com/api/photos',
+							update: 'http://blaa.com/api/photos/:id',
+							delete: 'http://blaa.com/api/photos/:id',
+							associate: 'http://blaa.com/api/photos/:id/associate',
+							disassociate: 'http://blaa.com/api/photos/:id/disassociate',
 						}
 					},
 					photos: [],
@@ -45,7 +57,8 @@ fdescribe('MediaManager', () => {
 				},
 			},
 			components: {
-				MediaManager
+				MediaManager,
+				DummyComponent
 			},
 			methods: {//podemos mockear algunos metodos, ver el spyOn más abajo
 				generalError: function(){},
@@ -58,10 +71,17 @@ fdescribe('MediaManager', () => {
 					})
 				},
 				post: function(){},
+			},
+			events: {
+				callMediaManager(component_name, component) {
+					console.log('recibe')
+					this.$broadcast('callMediaManager', component_name, component)
+				}
 			}
 		}).$mount('body')//esto tambien es para el test
 
 		MM = vm.$children[0]//guardamos el child en la variable, para facilitar nuestro acceso a ella
+		DummyMediaComponent = vm.$children[1]//guardamos el child en la variable, para facilitar nuestro acceso a ella
 
 		//asi terminamos de mockearlos
 		spyOn(vm, 'generalError')
@@ -238,7 +258,7 @@ fdescribe('MediaManager', () => {
 			spyOn(MM, 'getChosenImage')
 			MM.chooseImage(id)
 			tick(() => {
-				expect(MM.getChosenImage).toHaveBeenCalledWith(vm.store.media_manager.routes.single_image+'/'+id)
+				expect(MM.getChosenImage).toHaveBeenCalledWith('http://blaa.com/api/photos/1')
 				done()
 			})
 		})
@@ -290,32 +310,55 @@ fdescribe('MediaManager', () => {
 			expect(MM.post).toHaveBeenCalledWith(document.getElementById('update_photo_form'))
 			done()
 		});
-		xit('al seleccionar una imagen, forma la ruta correcta del action de la forma', (done) => {});
+		it('al seleccionar una imagen, forma la ruta correcta del action de la forma', (done) => {
+			MM.chosen_image = {id:1}
+			tick(() => {
+				expect(document.getElementById('update_photo_form').action).toEqual('http://blaa.com/api/photos/1')
+				MM.chosen_image = {id:12}
+				tick(() => {
+					expect(document.getElementById('update_photo_form').action).toEqual('http://blaa.com/api/photos/12')
+					done()
+				})
+			})
+		});
 		xit('muestra mensaje de exito la petición fue aceptada', (done) => {});
 		xit('puede mostrar un error si la peticion no fue exitosa', (done) => {});
 	})
 
 	describe('[DELETE] Eliminación de medias', ()=> {
-		xit('puede hacer una petición DELETE ajax para eliminar una imagen', (done) => {
+		it('puede hacer una petición DELETE ajax para eliminar una imagen', (done) => {
 			spyOn(MM, 'post')
 			MM.post(document.getElementById('delete_photo_form'))
-			expect(document.getElementById('delete_photo_form').length).toEqual(1)
+			expect($('#delete_photo_form').length).toEqual(1)
 			expect(MM.post).toHaveBeenCalledWith(document.getElementById('delete_photo_form'))
 			done()
 		});
-		xit('al seleccionar una imagen, forma la ruta correcta del action de la forma', (done) => {});
+		it('al seleccionar una imagen, forma la ruta correcta del action de la forma', (done) => {
+			MM.chosen_image = {id:1}
+			tick(() => {
+				expect(document.getElementById('delete_photo_form').action).toEqual('http://blaa.com/api/photos/1')
+				MM.chosen_image = {id:12}
+				tick(() => {
+					expect(document.getElementById('delete_photo_form').action).toEqual('http://blaa.com/api/photos/12')
+					done()
+				})
+			})
+		});
 		xit('puede actualizar las imágenes que se muestran si se elimina exitosamente la imagen', (done) => {});
 		xit('puede mostrar un error si la peticion no fue exitosa', (done) => {});
 	})
 
 	describe('[Forms]', () => {
 		it('mandan los campos _method y _token correctos', () => {
+			let all_forms = $('form')
+
 			tick(() => {
-				let tokens = $('form')
+				let tokens = all_forms
 					.map((i, f)=> $(f).find('[name="_token"]').val())
 					.toArray()
 					.reduce((a, b) =>  a === b ? a : 'error', 'dameltoke')
 
+				expect(all_forms.length).toEqual(3)
 				expect(tokens).toEqual('dameltoke')
 
 				expect($('#update_photo_form').find('[name="_method"]').val()).toEqual('PATCH')
@@ -326,7 +369,15 @@ fdescribe('MediaManager', () => {
 
 	describe('Interacción con otros componentes', ()=>{
 		describe('Invocación por parte de un componente', () => {
-			xit('puede ser abierto por un componente', (done) => {});
+			it('puede ser abierto por un componente', (done) => {
+				// vm.$broadcast('callMediaManager', {name: 'dummy component'})
+				DummyMediaComponent.callMM()
+				tick(() => {
+					expect(MM.display).toEqual('block')
+					expect(MM.active_calling_component).toEqual(DummyMediaComponent)
+					done()
+				})
+			});
 			xit('puede recibir una referencia al componente que lo invoca (el "this" del componente)', (done) => {});
 			xit('puede eliminar esta referencia una vez que se cierra', (done) => {});
 		})
@@ -335,11 +386,6 @@ fdescribe('MediaManager', () => {
 			xit('puede mandar la imagen y otros metadatos al SingleImage o a Gallery si la respuesta fue exitosa (esto invocando un método callback propio del componente que llamó al Media Manager)'/*ver 'Invocación por parte de un componente'*/, (done) => {});
 			xit('puede mostrar un error si la peticion no fue exitosa', (done) => {});			
 		})	
-	})
-
-	describe('Orden y Filtros', () => {
-		xit('puede ordenar fotos por fecha', (done) => {});
-		xit('puede filtrar fotos por título', (done) => {});
 	})
 
 });

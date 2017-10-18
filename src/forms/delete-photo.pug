@@ -1,9 +1,9 @@
 form#delete_photo_form(
   method="POST"
+  :action="deleteUrl"
   role="form"
   v-on:submit.prevent="post"
 )
-  //- :action="deleteRoute"
   input(type="hidden" name="_method" value="DELETE")
   input(type="hidden" name="_token" v-model="store.csrf_token")
   input(

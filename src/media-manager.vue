@@ -4,6 +4,16 @@
   import {path, pathOr, compose} from 'ramda'
   import {numericalObjSort, objTextFilter} from 'coral-std-library'
 
+  const emptyComponent = {}
+
+  let getRoute = x =>  'esta función debe se sobreescribirse en el ready'
+
+  const makeUrlWithId = route => id => {
+    if(!route) {return '/'}
+    if(route.indexOf(':id') === -1) {return route} 
+    return route.split(':id').join(id)
+  }
+
   export default {
     data() {
       return {
@@ -12,6 +22,7 @@
         hola: 'mundo',
         photos: [],
         chosen_image: defaultChosenImage,
+        active_calling_component: emptyComponent,
         file_input: '',
         DnDEvents: {
           bin: ''
@@ -27,6 +38,7 @@
 
     ready() {
       this.store = this.$root.store
+      getRoute = mm_route_name => path(['$root', 'store', 'media_manager', 'routes', mm_route_name], this)
     },
 
     computed: {
@@ -37,6 +49,11 @@
         )(this.photos);
         return photos
       },
+
+      createUrl() { return getRoute('create')},
+
+      updateUrl() {return makeUrlWithId(getRoute('update'))(this.chosen_image.id)},
+      deleteUrl() {return makeUrlWithId(getRoute('delete'))(this.chosen_image.id)},
 
       singleImageRoute() {
         return compose(
@@ -55,7 +72,6 @@
       close() {
         this.display = 'none'
       },
-      
       
       getPhotos() {
         const root = this.$root
@@ -90,7 +106,10 @@
       },
 
       chooseImage(id) {
-        this.getChosenImage(this.singleImageRoute(id))
+        compose(
+          this.getChosenImage,
+          makeUrlWithId(getRoute('single_image'))
+        )(id)
       },
 
       getChosenImage(route) {
@@ -103,8 +122,27 @@
       onGetChosenImageDataSuccess(body) {
         this.chosen_image = body
       }
-    }   
+    },
+
+    associateMedia(id) {
+      
+    },
+    
+    events: {
+      callMediaManager(component) {
+        this.active_calling_component = component
+        this.open()
+      },
+
+      associateMedia(component_type, component) {
+        let callback = {
+          singleImage: this.associateImage,
+          gallery: this.associateImage
+        }[component_type] || (x => console.log('hubo un error, el componente '+ component_type + 'no tiene una respuesta asociada para [associateMedia], o fue llamado con los argumentos incorrectos ' + x))
+      }
+    }
   }    
+
 </script>
 
 <template lang="pug">
@@ -125,5 +163,4 @@
 </template>
 
 <style>
-
 </style>

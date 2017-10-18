@@ -1,9 +1,9 @@
 form#update_photo_form(
   method="POST"
+  :action="updateUrl"
   role="form"
   v-on:submit.prevent="post"
 )
-  //- :action="updateRoute"
   input(type="hidden" name="_method" value="PATCH")
   input(type="hidden" name="_token" v-model="store.csrf_token")  
 
