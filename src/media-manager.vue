@@ -1,10 +1,10 @@
 <script>
-  const defaultChosenImage = {src:'', id:'', languages:[], en: {}, es: {}, index:'', photoable_id:'', photoable_type:'', use:'', class:'', order:''}
-
   import {path, pathOr, compose} from 'ramda'
   import {numericalObjSort, objTextFilter} from 'coral-std-library'
 
-  const emptyComponent = {}
+  const defaultChosenImage = {src:'', id:'', languages:[], en: {}, es: {}, index:'', photoable_id:'', photoable_type:'', use:'', class:'', order:''}
+  const emptyComponent = {} 
+  const noMediaId = -1
 
   let getRoute = x =>  'esta función debe se sobreescribirse en el ready'
 
@@ -25,6 +25,7 @@
         photos: [],
         chosen_image: defaultChosenImage,
         active_calling_component: emptyComponent,
+        disassociate_media_id: noMediaId,
         file_input: '',
         DnDEvents: {
           bin: ''
@@ -56,6 +57,8 @@
 
       updateUrl() {return makeUrlWithId(getRoute('update'))(this.chosen_image.id)},
       deleteUrl() {return makeUrlWithId(getRoute('delete'))(this.chosen_image.id)},
+      associateUrl() {return makeUrlWithId(getRoute('associate'))(this.chosen_image.id)},
+      disassociateUrl() {return makeUrlWithId(getRoute('disassociate'))(this.disassociate_media_id)},
 
       singleImageRoute() {
         return compose(
@@ -73,6 +76,8 @@
 
       close() {
         this.display = 'none'
+        this.chosen_image = defaultChosenImage;
+        this.active_calling_component = emptyComponent;
       },
       
       getPhotos() {
@@ -99,7 +104,7 @@
       },
       
       makePost(form_id) {
-        this.post(document.getElementById(form_id));
+        this.$root.post(document.getElementById(form_id));
       },
 
       onCreateSuccess(body, input) {
@@ -126,14 +131,29 @@
       },
 
       onAssociateSuccess(body, input) {
-        this.active_calling_component.associateMedia(body.data)//pasamos la imagen asociada
+        this.active_calling_component.associateMedia(this.chosen_image)//pasamos la imagen asociada
+        this.$root.$nextTick(() => {
+          this.close();
+        })
       },
+      
+      onDisassociateSuccess(body, input) {
+        this.active_calling_component.disassociateMedia(this.disassociate_media_id)
+        this.active_calling_component = emptyComponent
+        this.disassociate_media_id = noMediaId
+      }
     },
 
     events: {
       callMediaManagerBroadcast(component_name, component) {
         this.active_calling_component = component
         this.open()
+      },
+
+      dissaociateMediaBroadcast(component_name, component, media_id) {
+        this.disassociate_media_id = media_id
+        this.active_calling_component = component
+        this.$root.post(document.getElementById('disassociate_photo_form'))
       },
 
       associateMedia(component_type, component) {
@@ -154,13 +174,18 @@
         :style="{'backgroundImage': 'url('+image.thumbnail_url+')'}"
       )
 
-
       include forms/create-photo
       
       include forms/update-photo
       
       include forms/delete-photo
 
+      include forms/associate-photo
+      +photo_assoc_form('associate_photo_form', 'POST', 'associateUrl')
+      +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')
+      
+      //- include forms/disassociate-photo
+      
 </template>
 
 <style>

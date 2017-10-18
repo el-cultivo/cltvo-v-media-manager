@@ -1,52 +1,57 @@
-form#asssociate_photo_form(
-  method="POST"
-  :action="associateRoute"
-  role="form"
-  v-on:submit.prevent="post"
-)
-  input(
-    type="hidden" 
-    name="_token" 
-    v-model="store.csrf_token"
-  ) 
-
-  input(
-    type="hidden"
-    name="photoable_id"
-    v-model="active_calling_component.photoable_id"
-    form="asssociate_photo_form"
+mixin photo_assoc_form(form_id, method, action)
+  form(
+    id=form_id
+    method="POST"
+    :action=action
+    role="form"
+    v-on:submit.prevent="post"
   )
+    if method === "DELETE"
+        input(type="hidden" name="_method" value="DELETE")
+        
+    input(
+      type="hidden" 
+      name="_token" 
+      v-model="store.csrf_token"
+    ) 
 
-  input(
-    type="hidden"
-    name="photoable_type"
-    v-model="active_calling_component.photoable_type"
-    form="asssociate_photo_form"
-  )
+    input(
+      type="hidden"
+      name="photoable_id"
+      v-model="active_calling_component.photoableId"
+      form=form_id
+    )
 
-  input(
-    type="hidden"
-    name="use"
-    v-model="active_calling_component.use"
-    form="asssociate_photo_form"
-  )
+    input(
+      type="hidden"
+      name="photoable_type"
+      v-model="active_calling_component.photoableType"
+      form=form_id
+    )
 
-  input(
-    type="hidden"
-    name="class"
-    v-model="active_calling_component.class"
-    form="asssociate_photo_form"
-  )
+    input(
+      type="hidden"
+      name="use"
+      v-model="active_calling_component.use"
+      form=form_id
+    )
 
-  input(
-    type="hidden"
-    name="order "
-    v-model="active_calling_component.order "
-    form="asssociate_photo_form"
-  )
+    input(
+      type="hidden"
+      name="class"
+      v-model="active_calling_component.class"
+      form=form_id
+    )
 
-  input.btn.btn-primary.input-sm.input.input__submit(
-    type="submit"
-    value="Seleccionar"
-    form="asssociate_photo_form"
-  )
+    input(
+      type="hidden"
+      name="order"
+      v-model="active_calling_component.order"
+      form=form_id
+    )
+
+    input.btn.btn-primary.input-sm.input.input__submit(
+      type="submit"
+      value="Seleccionar"
+      form=form_id
+    )

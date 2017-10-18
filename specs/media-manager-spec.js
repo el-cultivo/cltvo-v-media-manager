@@ -7,9 +7,11 @@ const tick = Vue.nextTick
 fdescribe('MediaManager', () => {
 	const DummyComponent = Vue.extend({
 		template: `<div></div>`,
+		props:['photoableId', 'photoableType', 'use', 'class', 'order'],
 		data() {
 			return {
-				component_name: 'Dummy'
+				component_name: 'Dummy',
+				media: {}
 			}
 		},
 		methods: {
@@ -17,8 +19,22 @@ fdescribe('MediaManager', () => {
 				return this.component_name
 			},
 
+			associateMedia(media) {
+				this.media = media
+			},
+			
+			disassociateMedia(media_id) {
+				if(media_id === this.media.id) {
+					this.media = {}
+				}
+			},
+
 			callMM() {
 				this.$dispatch('callMediaManager', 'DummyComponent', this)
+			},
+			
+			requestMediaDisassociation() {
+				this.$dispatch('mediaDissasociationRequest', 'DummyComponent', this, this.media.id)
 			}
 		}
 	})
@@ -33,7 +49,13 @@ fdescribe('MediaManager', () => {
 			template: `
 			<div id="main-vue">
 			<media-manager v-ref:media_manager></media-manager>
-			<dummy-component v-ref:dummy></dummy-component>
+			<dummy-component v-ref:dummy
+				photoable-id="24"
+				photoable-type="dummy-type"
+				use="dummyuse"
+				class="some-class"
+				:order="'null'"
+			></dummy-component>
 			</div>`,//metemos nuestro componente en el template de la instancia e Vue.  Como se ve podemos pasar props
 			mixins: [],
 			// ready() {console.log(this.$children);},
@@ -83,6 +105,10 @@ fdescribe('MediaManager', () => {
 			events: {
 				callMediaManager(component_name, component) {
 					this.$broadcast('callMediaManagerBroadcast', component_name, component)
+				},
+				
+				mediaDissasociationRequest(component_name, component, media_id) {
+					this.$broadcast('dissaociateMediaBroadcast', component_name, component, media_id)
 				}
 			}
 		}).$mount('body')//esto tambien es para el test
@@ -147,7 +173,7 @@ fdescribe('MediaManager', () => {
 			})
 		})
 		
-		fit('puede mostrar las imágenes una vez que existan en this.$root.store.photos', (done) => {
+		it('puede mostrar las imágenes una vez que existan en this.$root.store.photos', (done) => {
 			MM.open()
 			tick(() =>{
 				let images = $('.media-manager__image')
@@ -365,35 +391,159 @@ fdescribe('MediaManager', () => {
 					.toArray()
 					.reduce((a, b) =>  a === b ? a : 'error', 'dameltoke')
 
-				expect(all_forms.length).toEqual(3)
+				expect(all_forms.length).toEqual(5)
 				expect(tokens).toEqual('dameltoke')
 
 				expect($('#update_photo_form').find('[name="_method"]').val()).toEqual('PATCH')
 				expect($('#delete_photo_form').find('[name="_method"]').val()).toEqual('DELETE')
+				expect($('#disassociate_photo_form').find('[name="_method"]').val()).toEqual('DELETE')
 			})
 		})
 	})
 
 	describe('Interacción con otros componentes', ()=>{
 		describe('Invocación por parte de un componente', () => {
-			fit('puede ser abierto por un componente', (done) => {
+			it('puede ser abierto por un componente', (done) => {
 				DummyMediaComponent.callMM()
 				tick(() => {
 					expect(MM.display).toEqual('block')
+					done()
+				})
+			});
+			it('puede recibir una referencia al componente que lo invoca (el "this" del componente)', (done) => {
+				DummyMediaComponent.callMM()
+				tick(() => {
 					expect(MM.active_calling_component.component_name).toEqual(DummyMediaComponent.component_name)// no corremos un test de igualdad del objeto, porque karma crashea
 					done()
 				})
 			});
-			xit('puede recibir una referencia al componente que lo invoca (el "this" del componente)', (done) => {});
-			xit('puede eliminar esta referencia una vez que se cierra', (done) => {});
+			it('puede eliminar esta referencia una vez que se cierra', (done) => {
+				DummyMediaComponent.callMM()
+				tick(() => {
+					expect(MM.active_calling_component.component_name).toEqual(DummyMediaComponent.component_name)// no corremos un test de igualdad del objeto, porque karma crashea
+					MM.close()
+					tick(() => {
+						expect(MM.active_calling_component).toEqual({})
+						done()
+					})
+				})
+			});
 		})
 		describe('[POST] Asociación de medias', () => {
-			xit('puede hacer una petición a nombre de SingleImage y Gallery para asociar una imágen a un recurso (página, post, etc.)', (done) => {});
-			xit('puede mandar la imagen y otros metadatos al SingleImage o a Gallery si la respuesta fue exitosa (esto invocando un método callback propio del componente que llamó al Media Manager)'/*ver 'Invocación por parte de un componente'*/, (done) => {});
+			it('puede hacer una petición a nombre de SingleImage y Gallery para asociar una imágen a un recurso (página, post, etc.)', (done) => {
+				MM.chosen_image = {id: 2}
+				DummyMediaComponent.callMM()
+				tick(() => {
+					let form = $('#associate_photo_form')
+					expect(form[0].action).toEqual('http://blaa.com/api/photos/2/associate')
+					
+					let photoableId = form.find('[name="photoable_id"]').val()
+					expect(photoableId).toEqual('24')
+					
+					let photoableType = form.find('[name="photoable_type"]').val()
+					expect(photoableType).toEqual('dummy-type')
+					
+					let use = form.find('[name="use"]').val()
+					expect(use).toEqual('dummyuse')
+					
+					let class_ = form.find('[name="class"]').val()
+					expect(class_).toEqual('some-class')
+					
+					let order = form.find('[name="order"]').val()
+					expect(order).toEqual('null')
+					
+					MM.close() 
+					tick(() => {
+						let photoableId = form.find('[name="photoable_id"]').val()
+						expect(photoableId).toEqual('')
+						
+						let photoableType = form.find('[name="photoable_type"]').val()
+						expect(photoableType).toEqual('')
+						
+						let use = form.find('[name="use"]').val()
+						expect(use).toEqual('')
+						
+						let class_ = form.find('[name="class"]').val()
+						expect(class_).toEqual('')
+						
+						let order = form.find('[name="order"]').val()
+						expect(order).toEqual('')							
+						
+						done()
+					})				
+				})
+			});
+			it('puede mandar la imagen y otros metadatos al SingleImage o a Gallery si la respuesta fue exitosa (esto invocando un método callback propio del componente que llamó al Media Manager)'/*ver 'Invocación por parte de un componente'*/, (done) => {
+				DummyMediaComponent.callMM()
+				MM.chosen_image = photos[0]
+				MM.onAssociateSuccess()
+				tick(() => {
+					expect(DummyMediaComponent.media).toEqual(photos[0])
+					done()
+				})
+			});
+			it('cierra al MediaManager después de una petición exitosa', (done) => {
+				DummyMediaComponent.callMM()
+				MM.chosen_image = photos[0]
+				MM.onAssociateSuccess()
+				tick(() => {
+					expect(MM.display).toEqual('none')
+					done()
+				})
+			});			
 			xit('puede mostrar un error si la peticion no fue exitosa', (done) => {});			
 		})	
+		
+		describe('[DELETE] Desasociación de medias', () => {
+			it('escucha un evento para realizar una desasociación en favor de algún componente que ofrezaca la interfaz dissasociateMedia', (done) => {
+				DummyMediaComponent.associateMedia({id:1})
+				DummyMediaComponent.requestMediaDisassociation() 
+				tick(() => {
+					expect(MM.active_calling_component.component_name).toEqual(DummyMediaComponent.component_name)
+					expect(MM.disassociate_media_id).toEqual(DummyMediaComponent.media.id)
+					expect(vm.post).toHaveBeenCalledWith(document.getElementById('disassociate_photo_form'))
+					done()
+				})
+			})
+		
+			it('pasa las valores necesarios a la forma de desasociación', (done) => {
+				DummyMediaComponent.associateMedia({id:3})
+				DummyMediaComponent.requestMediaDisassociation() 
+				tick(() => {
+					let form = $('#disassociate_photo_form')
+					expect(form[0].action).toEqual('http://blaa.com/api/photos/3/disassociate')
+					
+					let photoableId = form.find('[name="photoable_id"]').val()
+					expect(photoableId).toEqual('24')
+					
+					let photoableType = form.find('[name="photoable_type"]').val()
+					expect(photoableType).toEqual('dummy-type')
+					
+					let use = form.find('[name="use"]').val()
+					expect(use).toEqual('dummyuse')
+					
+					let class_ = form.find('[name="class"]').val()
+					expect(class_).toEqual('some-class')
+					
+					let order = form.find('[name="order"]').val()
+					expect(order).toEqual('null')
+					
+					done()
+				})
+			})
+			it('informa al componente que hizo la petición del éxito de la misma y le manda el id de la media desasociada', (done) => {
+				DummyMediaComponent.associateMedia({id:3})
+				DummyMediaComponent.requestMediaDisassociation() 
+				MM.onDisassociateSuccess()
+				tick(() => {
+					expect(DummyMediaComponent.media).toEqual({})
+					expect(MM.active_calling_component).toEqual({})
+					expect(MM.disassociate_media_id).toEqual(-1)
+					done()
+				})
+			})
+		})
 	})
-
 });
 
 
