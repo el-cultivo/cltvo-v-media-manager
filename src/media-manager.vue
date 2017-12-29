@@ -183,8 +183,7 @@
 
       +photo_assoc_form('associate_photo_form', 'POST', 'associateUrl')
 
-      +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')
-      
+      +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')      
       
 </template>
 
