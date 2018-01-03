@@ -11,7 +11,7 @@ const makePhoto = id => ({
   "en_alt": "en_Alt "+id,
   "en_description": "en_Description "+id,
   "thumbnail_url": `http://mm.dev/storage/images/thumbnails/${id}.png`,
-  "url": `http://creelalumni.dev/storage/images/${id}.png`,
+  "url": `http://mm.dev/storage/images/${id}.png`,
   "title": "Title "+id,
   "alt": "Alt "+id,
   "description": "Description "+id,
