@@ -20,7 +20,7 @@
       ],
       
       ready() {
-        this.chosen_image = this.currentImage 
+        this.chosen_image = this.currentImage || {}
       },
 
       methods: {

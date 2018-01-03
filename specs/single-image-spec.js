@@ -7,7 +7,7 @@ import {photos} from './media-manager/photos'
 
 const tick = Vue.nextTick
 
-fdescribe('MediaManager', () => {
+describe('MediaManager', () => {
 	const DummyComponent = Vue.extend({
 		template: `<div></div>`,
 		props:['photoableId', 'photoableType', 'use', 'class', 'order'],
@@ -123,30 +123,30 @@ fdescribe('MediaManager', () => {
 	}) 
 	
 	describe('Tiene un template', () => {
-        fit('tiene un template que existe en el DOM', () => {            
+        it('tiene un template que existe en el DOM', () => {            
             expect(document.getElementsByClassName('.single-image')).not.toEqual(null)
         })
-		fit('puede tener un id', () => {
+		it('puede tener un id', () => {
 			expect(document.getElementById('si1')).not.toEqual(null)
 		})
 	})
 
     describe('Inicialización', () => {
-        fit('puede recibir una imagen desde el principio', (done) => {
+        it('puede recibir una imagen desde el principio', (done) => {
             expect(SIwithImage.chosen_image.url).toEqual('http://hola.mundo/img.jpg')
             done()
         })
     })
 
     describe('Interacción con el Media Manager', () => {
-        fit('puede abrir el media manager', (done) => {
+        it('puede abrir el media manager', (done) => {
             SI.callMM()
             tick(() => {
                 expect(MM.display).toEqual('block')
                 done()
             })
         })
-        fit('puede recibir un imagen y otros metadatos desde el Media Manager y si la respuesta fue exitosa'/*ver 'Invocación por parte de un componente'*/, (done) => {
+        it('puede recibir un imagen y otros metadatos desde el Media Manager y si la respuesta fue exitosa'/*ver 'Invocación por parte de un componente'*/, (done) => {
             SI.callMM()
             MM.chosen_image = photos[0]
             MM.onAssociateSuccess()
@@ -155,7 +155,7 @@ fdescribe('MediaManager', () => {
                 done()
             })
         });
-        fit('escucha un evento para realizar una desasociación en favor de algún componente que ofrezaca la interfaz dissasociateMedia', (done) => {
+        it('escucha un evento para realizar una desasociación en favor de algún componente que ofrezaca la interfaz dissasociateMedia', (done) => {
             SI.associateMedia({ id: 1 })
             SI.requestMediaDisassociation()
             tick(() => {

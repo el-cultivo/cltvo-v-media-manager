@@ -7,7 +7,7 @@ import {photos} from './media-manager/photos'
 
 const tick = Vue.nextTick
 
-fdescribe('MediaManager', () => {
+describe('MultiImages', () => {
 	
 	let vm = {}
 	let MM = {}
@@ -92,19 +92,19 @@ fdescribe('MediaManager', () => {
 	}) 
 	
 	describe('Tiene un template', () => {
-        fit('tiene un template que existe en el DOM', () => {            
+        it('tiene un template que existe en el DOM', () => {            
             expect(document.getElementsByClassName('.multi-images')).not.toEqual(null)
         })
-		fit('puede tener un id', () => {
+		it('puede tener un id', () => {
 			expect(document.getElementById('mi1')).not.toEqual(null)
 		})
-        fit('puede imprimir las imágenes que se le pasan', (done) => {
+        it('puede imprimir las imágenes que se le pasan', (done) => {
 			tick(() => {
 				expect($('.multi-images__img').length).toEqual(3)
 				done()
 			})
         })
-		fit('puede imprimir las imágenes que se le asocian', (done) => {
+		it('puede imprimir las imágenes que se le asocian', (done) => {
 			MIwithImages.associateMedia(vm.store.photos[3])
 			MIwithImages.associateMedia(vm.store.photos[4])
 			tick(() => {
@@ -112,7 +112,7 @@ fdescribe('MediaManager', () => {
 				done()
 			})
 		})
-		fit('puede desimprimir las imágenes que se le desasocian', (done) => {
+		it('puede desimprimir las imágenes que se le desasocian', (done) => {
 			tick(() => {
 				MIwithImages.requestMediaDisassociation(1)
 				MM.onDisassociateSuccess()
@@ -125,7 +125,7 @@ fdescribe('MediaManager', () => {
 	})
 
     describe('Inicialización', () => {
-        fit('puede recibir una imagen desde el principio', (done) => {
+        it('puede recibir una imagen desde el principio', (done) => {
             expect(MI.chosen_images[0]).toEqual(undefined)
             expect(MIwithImages.chosen_images[0].url).toEqual('http://mm.dev/storage/images/0.png')
             expect(MIwithImages.chosen_images.length).toEqual(3)
@@ -134,14 +134,14 @@ fdescribe('MediaManager', () => {
     })
 
     describe('Interacción con el Media Manager', () => {
-        fit('puede abrir el media manager', (done) => {
+        it('puede abrir el media manager', (done) => {
             MI.callMM()
             tick(() => {
                 expect(MM.display).toEqual('block')
                 done()
             })
         })
-        fit('puede recibir un imagen y otros metadatos desde el Media Manager y si la respuesta fue exitosa'/*ver 'Invocación por parte de un componente'*/, (done) => {
+        it('puede recibir un imagen y otros metadatos desde el Media Manager y si la respuesta fue exitosa'/*ver 'Invocación por parte de un componente'*/, (done) => {
             MI.callMM()
             MM.chosen_image = photos[0]
             MM.onAssociateSuccess()
@@ -150,7 +150,7 @@ fdescribe('MediaManager', () => {
                 done()
             })
         });
-        fit('escucha un evento para realizar una desasociación en favor de algún componente que ofrezaca la interfaz dissasociateMedia', (done) => {
+        it('escucha un evento para realizar una desasociación en favor de algún componente que ofrezaca la interfaz dissasociateMedia', (done) => {
             MI.associateMedia({ id: 1 })
             MI.associateMedia({ id: 2 })
             MI.requestMediaDisassociation(2)
@@ -166,7 +166,7 @@ fdescribe('MediaManager', () => {
         })
     })
 	describe('Sort', () => {
-		fit('puede cambiar el orden de las imágenes', (done) => {
+		it('puede cambiar el orden de las imágenes', (done) => {
 			let initial_order_of_ids = MIwithImages.chosen_images.map(img => img.id)
 			MIwithImages.onSortUpdate({oldIndex: 0, newIndex: 1})
 			tick(() => {
@@ -176,7 +176,7 @@ fdescribe('MediaManager', () => {
 				done()
 			})
 		})
-		fit('puede obtener el órden de los ids de las imágenes', (done) => {
+		it('puede obtener el órden de los ids de las imágenes', (done) => {
 			expect(MIwithImages.orderedIds).toEqual([0,1,2])
 			MIwithImages.onSortUpdate({ oldIndex: 0, newIndex: 1 })
 			tick(() => {
