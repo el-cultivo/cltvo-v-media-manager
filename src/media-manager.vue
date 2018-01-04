@@ -199,7 +199,6 @@
       +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')
       include forms/sort-photos-form
       
-      
 </template>
 
 <style>

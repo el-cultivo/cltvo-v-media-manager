@@ -2,9 +2,11 @@ import Vue from 'vue'
 import MediaManager from '../src/media-manager.vue'
 import {photos} from './media-manager/photos'
 
+//faltan alertas de error bc46194
+
 const tick = Vue.nextTick
 
-fdescribe('MediaManager', () => {
+describe('MediaManager', () => {
 	const DummyComponent = Vue.extend({
 		template: `<div></div>`,
 		props:['photoableId', 'photoableType', 'use', 'class', 'order'],
@@ -108,7 +110,7 @@ fdescribe('MediaManager', () => {
 				},
 				post: function(){},
 			},
-			events: {
+			events: {//ESTOS métodos deben de estar en la intancia de Vue que contiene al Media Manager
 				callMediaManager(component_name, component) {
 					this.$broadcast('callMediaManagerBroadcast', component_name, component)
 				},

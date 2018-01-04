@@ -88,6 +88,7 @@ module.exports = {
 			    loader: 'vue-loader',
 		    	options: {
         	    	loaders: {
+										html: 'pug-loader',
             	    	scss: 'vue-style-loader!css-loader!sass-loader'
                		}
                	},
