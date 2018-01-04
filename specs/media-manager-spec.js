@@ -13,7 +13,8 @@ describe('MediaManager', () => {
 		data() {
 			return {
 				component_name: 'Dummy',
-				media: {}
+				media: {},
+				ordered_ids: [1,2,3]
 			}
 		},
 		methods: {
@@ -37,6 +38,10 @@ describe('MediaManager', () => {
 			
 			requestMediaDisassociation() {
 				this.$dispatch('mediaDissasociationRequest', 'DummyComponent', this, this.media.id)
+			},
+
+			requestPhotosSorting() {
+				this.$dispatch('photosSortingRequest', 'DummyComponent', this, this.ordered_ids)
 			}
 		}
 	})
@@ -66,6 +71,7 @@ describe('MediaManager', () => {
 					media_manager: {
 						routes: {
 							index: 'http://blaa.com/api/photos',
+							sort_photos: 'http://blaa.com/api/photos/sort',
 							single_image: 'http://blaa.com/api/photos/:id',
 							create: 'http://blaa.com/api/photos',
 							update: 'http://blaa.com/api/photos/:id',
@@ -111,7 +117,11 @@ describe('MediaManager', () => {
 				
 				mediaDissasociationRequest(component_name, component, media_id) {
 					this.$broadcast('dissaociateMediaBroadcast', component_name, component, media_id)
-				}
+				},
+				photosSortingRequest(component_name, component, ordered_ids) {
+					this.$broadcast('sortPhotosBroadcast', component_name, component, ordered_ids)
+				},
+				
 			}
 		}).$mount('body')//esto tambien es para el test
 
@@ -393,7 +403,7 @@ describe('MediaManager', () => {
 					.toArray()
 					.reduce((a, b) =>  a === b ? a : 'error', 'dameltoke')
 
-				expect(all_forms.length).toEqual(5)
+				expect(all_forms.length).toEqual(6)
 				expect(tokens).toEqual('dameltoke')
 
 				expect($('#update_photo_form').find('[name="_method"]').val()).toEqual('PATCH')
@@ -545,6 +555,50 @@ describe('MediaManager', () => {
 				})
 			})
 		})
+		describe('[POST] Ordenamiento de medias de in componente (Sort), i.e. MultiImages', () => {
+			it('puede hacer una petición a nombre del MultiImages para mandar el orden de las imágenes', (done) => {
+				DummyMediaComponent.requestPhotosSorting()
+				
+				tick(() => {
+					let form = $('#sortphotos_form')
+					expect(form[0].action).toEqual('http://blaa.com/api/photos/sort')
+
+					let photoableId = form.find('[name="photoable_id"]').val()
+					expect(photoableId).toEqual('24')
+
+					let photoableType = form.find('[name="photoable_type"]').val()
+					expect(photoableType).toEqual('dummy-type')
+
+					let use = form.find('[name="use"]').val()
+					expect(use).toEqual('dummyuse')
+
+					let class_ = form.find('[name="class"]').val()
+					expect(class_).toEqual('some-class')
+
+					let photos = form.find('[name="photos[]"]')
+
+					MM.close()
+					tick(() => {
+						let photoableId = form.find('[name="photoable_id"]').val()
+						expect(photoableId).toEqual('')
+
+						let photoableType = form.find('[name="photoable_type"]').val()
+						expect(photoableType).toEqual('')
+
+						let use = form.find('[name="use"]').val()
+						expect(use).toEqual('')
+
+						let class_ = form.find('[name="class"]').val()
+						expect(class_).toEqual('')
+
+						done()
+					})
+				})
+			});
+		
+			xit('puede mandar una alerta si la peticion fue exitosa', (done) => { });
+			xit('puede mostrar un error si la peticion no fue exitosa', (done) => { });
+		})	
 	})
 });
 

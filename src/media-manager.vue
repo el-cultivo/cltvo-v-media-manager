@@ -2,11 +2,11 @@
   import {path, pathOr, compose} from 'ramda'
   import {numericalObjSort, objTextFilter} from 'coral-std-library'
 
+  const tapN = n => x => {console.log(n, x); return x}
+
   const defaultChosenImage = {src:'', id:'', languages:[], en: {}, es: {}, index:'', photoable_id:'', photoable_type:'', use:'', class:'', order:''}
   const emptyComponent = {} 
   const noMediaId = -1
-
-  let getRoute = x =>  'esta función debe se sobreescribirse en el ready'
 
   const makeUrlWithId = route => id => {
     if(!route) {return '/'}
@@ -41,7 +41,6 @@
 
     ready() {
       this.store = this.$root.store
-      getRoute = mm_route_name => path(['$root', 'store', 'media_manager', 'routes', mm_route_name], this)
     },
 
     computed: {
@@ -53,12 +52,13 @@
         return photos
       },
 
-      createUrl() { return getRoute('create')},
+      createUrl() { return this.getRoute('create')},
+      sortPhotosUrl() { return this.getRoute('sort_photos')},
 
-      updateUrl() {return makeUrlWithId(getRoute('update'))(this.chosen_image.id)},
-      deleteUrl() {return makeUrlWithId(getRoute('delete'))(this.chosen_image.id)},
-      associateUrl() {return makeUrlWithId(getRoute('associate'))(this.chosen_image.id)},
-      disassociateUrl() {return makeUrlWithId(getRoute('disassociate'))(this.disassociate_media_id)},
+      updateUrl() {return makeUrlWithId(this.getRoute('update'))(this.chosen_image.id)},
+      deleteUrl() {return makeUrlWithId(this.getRoute('delete'))(this.chosen_image.id)},
+      associateUrl() {return makeUrlWithId(this.getRoute('associate'))(this.chosen_image.id)},
+      disassociateUrl() {return makeUrlWithId(this.getRoute('disassociate'))(this.disassociate_media_id)},
 
       singleImageRoute() {
         return compose(
@@ -79,6 +79,11 @@
         this.chosen_image = defaultChosenImage;
         this.active_calling_component = emptyComponent;
       },
+
+      getRoute(mm_route_name) { 
+        return path(['$root', 'store', 'media_manager', 'routes', mm_route_name], this)
+      },
+
       
       getPhotos() {
         const root = this.$root
@@ -115,7 +120,7 @@
       chooseImage(id) {
         compose(
           this.getChosenImage,
-          makeUrlWithId(getRoute('single_image'))
+          makeUrlWithId(this.getRoute('single_image'))
         )(id)
       },
 
@@ -141,6 +146,10 @@
         this.active_calling_component.disassociateMedia(this.disassociate_media_id)
         this.active_calling_component = emptyComponent
         this.disassociate_media_id = noMediaId
+      },
+
+      onSortphotosSuccess(body, input) {
+        this.active_calling_component = emptyComponent
       }
     },
 
@@ -161,6 +170,10 @@
           singleImage: this.associateImage,
           gallery: this.associateImage
         }[component_type] || (x => console.log('hubo un error, el componente '+ component_type + 'no tiene una respuesta asociada para [associateMedia], o fue llamado con los argumentos incorrectos ' + x))
+      },
+      sortPhotosBroadcast(component_name, component, ordered_ids) {
+          this.active_calling_component = component
+          this.$root.post(document.getElementById('sortphotos_form'))
       }
   }    
 }
@@ -183,7 +196,8 @@
 
       +photo_assoc_form('associate_photo_form', 'POST', 'associateUrl')
 
-      +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')      
+      +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')
+      include forms/sort-photos-form
       
 </template>
 
