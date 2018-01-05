@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="http://minaci.cltvo.com/css/admin.css" type="text/css">
 h1 Hola
 form(id="create-file_form" enctype="multipart/form-data" action="/api/save" method="post")
     input(type="file" form="create-file_form" name="file_input")
@@ -5,3 +6,86 @@ form(id="create-file_form" enctype="multipart/form-data" action="/api/save" meth
     div
         input(type="submit" form="create-file_form" value="Enviar")
 p=photos
+//- img(src="/1.jpg")
+
+div#main-vue
+script(src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.js")
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+script(src="http://localhost:8080/dist/media-manager.js")
+script.
+    const MediaManager = window['media-manager']
+    const tap = x => {console.log(x); return x}
+    const tapN = n => x => {console.log(n, x); return x}
+    console.log('hola')
+    //todo esto es para testear, pero es lo que requiere también la instancia principal de Vue, que contendrá al media manager
+   const  vm = new Vue({//creamos una instancia de Vue que nos sirva para el test
+            replace:false,//no es necesario fuera del test, es sólo para cuando usamos el método mount sobre el body
+            template: `
+            <div id="main-vue">
+                <h1> Media Manager Test</h1>
+                <button v-on:click="openMediaManager">Open Media Manager</button>
+                <media-manager v-ref:media_manager></media-manager>
+            </div>`,//metemos nuestro componente en el template de la instancia e Vue.  Como se ve podemos pasar props
+            mixins: [],
+            // ready() {console.log(this.$children);},
+            data: {
+                store: {
+                    media_manager: {
+                        routes: {
+                            index: 'http://localhost:3000/ajax/photos',
+                            sort_photos: 'http://blaa.com/api/photos/sort',
+                            single_image: 'http://blaa.com/api/photos/:id',
+                            create: 'http://blaa.com/api/photos',
+                            update: 'http://blaa.com/api/photos/:id',
+                            delete: 'http://blaa.com/api/photos/:id',
+                            associate: 'http://blaa.com/api/photos/:id/associate',
+                            disassociate: 'http://blaa.com/api/photos/:id/disassociate',
+                        }
+                    },
+                    photos: [],
+                    languages: [
+                        {
+                            iso6391: 'en',
+                            name: 'English'
+                        },
+                        {
+                            iso6391: 'es',
+                            name: 'Español'
+                        }
+                    ],
+                    csrf_token: 'dameltoke'
+                },
+            },
+            components: {
+                MediaManager,
+            },
+            methods: {//podemos mockear algunos metodos, ver el spyOn más abajo
+                //- generalError: function(){},
+                //- alertError: function() {},
+                //- get: function(route, {success, error}){
+                //- 	MM[success]({
+                //- 		data: {
+                //- 			photos:photos
+                //- 		}
+                //- 	})
+                //- },
+                //- post: function(){},
+                openMediaManager() {
+                    console.log('corre')
+                    this.$broadcast('callMediaManagerBroadcast', 'NoComponent', {})
+                }
+            },
+            events: {//ESTOS métodos deben de estar en la intancia de Vue que contiene al Media Manager
+                callMediaManager(component_name, component) {
+                    this.$broadcast('callMediaManagerBroadcast', component_name, component)
+                },
+                
+                mediaDissasociationRequest(component_name, component, media_id) {
+                    this.$broadcast('dissaociateMediaBroadcast', component_name, component, media_id)
+                },
+                photosSortingRequest(component_name, component, ordered_ids) {
+                    this.$broadcast('sortPhotosBroadcast', component_name, component, ordered_ids)
+                },
+                
+            }
+        }).$mount('#main-vue')

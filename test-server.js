@@ -5,7 +5,7 @@ const makePhoto = require('./makePhoto')
 const upload = multer({ storage:  multer.memoryStorage() })
 const app = express()
 
-app.use(express.static('photos'))
+app.use(express.static(__dirname + '/photos'))
 app.set('views', './')
 app.set('view engine', 'pug')
 
@@ -13,6 +13,12 @@ app.get('/', function (req, res) {
    readAsText('utf8')('./photos.json')
     .map(JSON.parse)
     .fork(console.log, photos=> res.render('index', {photos}))
+})
+
+app.get('/ajax/photos', function (req, res) {
+  readAsText('utf8')('./photos.json')
+    .map(JSON.parse)
+    .fork(console.log, photos => res.status(200).json({ photos }))
 })
 
 app.post('/api/save', upload.single('file_input'),function (req, res) {

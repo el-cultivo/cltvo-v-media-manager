@@ -33,9 +33,10 @@ const addDevPlugins = plugins_arr => {
 
 module.exports = {
 	entry: {
-		example: './src/example.js', 
-		'v-select': './src/v-select.vue',
-		'v-select-raw': './src/v-select-raw.js'
+		// example: './src/example.js', 
+		'media-manager': './src/media-manager.vue', 
+		// 'v-select': './src/v-select.vue',
+		// 'v-select-raw': './src/v-select-raw.js'
 	},
 
 	externals: process.env.NODE_ENV === 'prod' ? ['vue','ramda'] : [],
@@ -44,7 +45,7 @@ module.exports = {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist'),
 		publicPath: 'dist/', //importante para que funcione el HMR
-		library: 'mylib',
+		library: '[name]',
 		libraryTarget: 'umd'
 	},
 	module: {
