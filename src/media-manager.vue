@@ -1,7 +1,9 @@
 <script>
   import {path, pathOr, compose} from 'ramda'
   import {numericalObjSort, objTextFilter} from 'coral-std-library'
+  import axios from 'axios'
 
+  const tap = x => {console.log(x); return x}
   const tapN = n => x => {console.log(n, x); return x}
 
   const defaultChosenImage = {src:'', id:'', languages:[], en: {}, es: {}, index:'', photoable_id:'', photoable_type:'', use:'', class:'', order:''}
@@ -19,6 +21,7 @@
   export default {
     data() {
       return {
+        axios: axios,
         store: {},
         display: 'none',
         hola: 'mundo',
@@ -86,22 +89,10 @@
 
       
       getPhotos() {
-        const root = this.$root
-        root.get(
-          root.store.media_manager.routes.index, 
-          {
-            success: 'onGetPhotosSuccess',
-            error: 'onGetPhotosError'
-          }
-        )
-      },
-      
-      onGetPhotosSuccess(body) {
-        this.photos = pathOr([], ['data', 'photos'], body)                    
-      },
-    
-      onGetPhotosError(body) {
-        this.$root.alertError(body)
+        this.axios.get(this.$root.store.media_manager.routes.index)
+          // .then(tap)
+          .then(body => {this.photos = pathOr([], ['data', 'photos'], body)})
+          .catch(body => { this.$root.alertError(body)})
       },
       
       post(evt) {

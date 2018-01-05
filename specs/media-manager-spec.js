@@ -126,6 +126,13 @@ describe('MediaManager', () => {
 		}).$mount('body')//esto tambien es para el test
 
 		MM = vm.$children[0]//guardamos el child en la variable, para facilitar nuestro acceso a ella
+		MM.axios.get = function (route) {//mockeamos el axios de getPhotos a un success			
+			return Promise.resolve({
+				data: {
+					photos: photos
+				}
+			})
+		}
 		DummyMediaComponent = vm.$children[1]//guardamos el child en la variable, para facilitar nuestro acceso a ella
 
 		//asi terminamos de mockearlos
@@ -169,9 +176,9 @@ describe('MediaManager', () => {
 	})
 	
 	describe('[GET] Trae Medias', ()=> {
-		it('puede hacer una petición GET ajax para traer imágenes', (done) => {
+		it('puede phacer una petición GET ajax para traer imágenes', (done) => {
 			MM.getPhotos()
-			tick(()=> {
+			tick(()=> {				
 				expect(MM.photos).toEqual(photos)
 				done()
 			})
@@ -201,9 +208,7 @@ describe('MediaManager', () => {
 		})
 		
 		it('puede mandar un error si la petición falla', (done) => {
-			vm.get = function(route, {success, error}){	
-				MM[error]({message: ['errores']})
-			}
+			MM.axios.get = route => Promise.reject({ message: ['errores'] })
 			MM.getPhotos()
 			tick(()=> {
 				expect(vm.alertError).toHaveBeenCalledWith({message: ['errores']})

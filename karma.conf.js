@@ -8,6 +8,8 @@ module.exports = function(config) {
         // browsers: ['Chrome'],
 
         files: [
+            './node_modules/es6-promise/dist/es6-promise.min.js',
+            './node_modules/es6-promise/dist/es6-promise.auto.min.js',
             './node_modules/jquery/dist/jquery.js',
             './specs/stubs/materialize.js',
             './specs/stubs/vue-html5-editor.js',
