@@ -7,37 +7,56 @@ form#update_photo_form(
   input(type="hidden" name="_method" value="PATCH")
   input(type="hidden" name="_token" v-model="store.csrf_token")  
 
-  input.form-control.input-sm.input.update_title_input(
-    v-for="lang in store.languages"
-    v-model="chosen_image[lang.iso6391+'_title']"
-    :id="'update_photo_title'+lang.iso6391"
-    :name="'title['+lang.iso6391+']'"
-    :placeholder="lang.name"
-    form="update_photo_form"
-    type="text"
-  )
+  .col.s12
+    
+    .row
+      .col.s12
+        span.text(v-text="store.media_manager.trans.update_form.title")
+      .col.s12.media-manager__col-form
+        input.form-control.input-sm.input.update_title_input(
+          v-for="lang in store.languages"
+          v-model="chosen_image[lang.iso6391+'_title']"
+          :id="'update_photo_title'+lang.iso6391"
+          :name="'title['+lang.iso6391+']'"
+          :placeholder="lang.name"
+          form="update_photo_form"
+          type="text"
+        )
 
-  input.form-control.input-sm.input.update_alt_input(
-    v-for="lang in store.languages"
-    v-model="chosen_image[lang.iso6391+'_alt']"
-    :id="'update_photo_alt'+lang.iso6391"
-    :name="'alt['+lang.iso6391+']'"
-    :placeholder="lang.name"
-    form="update_photo_form"
-    type="text"
-  )
+    .row
+      .col.s12
+        span.text(v-text="store.media_manager.trans.update_form.alt")
+      .col.s12.media-manager__col-form
+        input.form-control.input-sm.input.update_alt_input(
+          v-for="lang in store.languages"
+          v-model="chosen_image[lang.iso6391+'_alt']"
+          :id="'update_photo_alt'+lang.iso6391"
+          :name="'alt['+lang.iso6391+']'"
+          :placeholder="lang.name"
+          form="update_photo_form"
+          type="text"
+        )
 
-  textarea.form-control.input-sm.input.update_description_input(
-    v-for="lang in store.languages"
-    v-model="chosen_image[lang.iso6391+'_description']"
-    :id="'update_photo_description'+lang.iso6391"
-    :name="'description['+lang.iso6391+']'"
-    :placeholder="lang.name"
-    rows="2"
-    form="update_photo_form"
-  )
+    .row
+      .col.s12
+        span.text(v-text="store.media_manager.trans.update_form.description")
+      .col.s12.media-manager__col-form
+        textarea.form-control.input.materialize-textarea(
+          v-for="lang in store.languages"
+          v-model="chosen_image[lang.iso6391+'_description']"
+          :id="'update_photo_description'+lang.iso6391"
+          :name="'description['+lang.iso6391+']'"
+          :placeholder="lang.name"
+          rows="2"
+          form="update_photo_form"
+        )
 
-  input.btn.btn-primary.input-sm.input.input__submit(
-    type="submit"
-    form="update_photo_form"
-  )
+    .row
+      .col.s12
+        .divider
+    
+    .col.s6.center-align.right
+      input.btn.btn-primary.input-sm.input.input__submit(
+        type="submit"
+        form="update_photo_form"
+      )

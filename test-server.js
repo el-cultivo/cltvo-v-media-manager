@@ -4,6 +4,8 @@ const {readAsText, writeFile} = require('coral-fs-tasks')
 const makePhoto = require('./makePhoto')
 const upload = multer({ storage:  multer.memoryStorage() })
 const app = express()
+const R = require('ramda')
+const tap = x => {console.log(x); return x}
 
 app.use(express.static(__dirname + '/photos'))
 app.set('views', './')
@@ -19,6 +21,14 @@ app.get('/ajax/photos', function (req, res) {
   readAsText('utf8')('./photos.json')
     .map(JSON.parse)
     .fork(console.log, photos => res.status(200).json({ photos }))
+})
+
+app.get('/ajax/photos/:id', function (req, res) {
+  readAsText('utf8')('./photos.json')
+    .map(JSON.parse)
+    .map(photos => photos.filter(photo => Number(photo.id) === Number(req.params.id)))
+    .map(R.pathOr({}, [0]))
+    .fork(console.log, photo => res.status(200).json(photo))
 })
 
 app.post('/api/save', upload.single('file_input'),function (req, res) {

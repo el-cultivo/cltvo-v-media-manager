@@ -68,6 +68,20 @@
           route => id => route+'/'+id,
           pathOr('', ['store', 'media_manager', 'routes', 'single_image'])
         )(this)
+      },
+
+      imagesContainerClass() {
+        return {
+          'col s10': this.chosen_image.src === '',
+          'col s6': this.chosen_image.src !== ''
+        }
+      },
+
+      imageClass() {
+        return {
+            'col s2': this.chosen_image.src === '',
+            'col s3': this.chosen_image.src !== ''
+        }
       }
     },
 
@@ -116,10 +130,11 @@
       },
 
       getChosenImage(route) {
-        this.$root.get(route, {
-          success: 'onGetChosenImageDataSuccess',
-          error: 'onGetChosenImageDataError'
-        })
+        this.axios.get(route)
+          .then(body => 
+              this.chosen_image = body.data
+          )
+          .catch(body => this.$root.alertError(body))
       },
 
       onGetChosenImageDataSuccess(body) {
@@ -172,19 +187,88 @@
 
 <template lang="pug">
   include forms/photos-association-forms
-  #media-manager(:style="{'display': display}")
-    #media-manager-images-container
-      .media-manager__image(
-        v-for="image in photos"
-        :style="{'backgroundImage': 'url('+image.thumbnail_url+')'}"
-      )
-
-      include forms/create-photo
+  #media-manager(
+    :style="{'display': display}"
+    class=" media-manager__modal-container media-manager__manage-img fade undraggable-unselectable-cascading"
+  )
+    #media-manager__drop-container.media-manager__drop-container(
+      v-on:click.self="close"
+    )
+      #media-manager__droppable-area.media-manager__droppable-area
+        .media-manager__icon-photo-container
+          span.fa.fa-file-image-o.media-manager__icon-photo
+          span.media-manager__icon-photo.media-manager__icon-photo--text(v-text="store.media_manager.trans.drag")
       
-      include forms/update-photo
-      
-      include forms/delete-photo
+      .modal-dialog.modal-lg.media-manager__modal.media-manager__manage-img-dialog.z-depth-2
+        .modal-content
+          //-header
+          .modal-body.media-manager__manage-img-body
+            .row.media-manager__row
+              .col.s2
+                input.input.input__search(
+                  v-model="search"
+                  :placeholder="store.media_manager.trans.search.placeholder"
+                  type="search"
+                )
+              
+              .col.s10
+                label(for="sort" v-text="store.media_manager.trans.filter.title")
+                select.form-control(
+                  v-model="sort_by"
+                  :placeholder="store.media_manager.trans.filter.placeholder"
+                  name="sort"
+                )
+                  option(
+                    v-for="order in sort_types"
+                    :value="order.value"
+                    v-text="order.name.es"
+                  )
+            
+            .row
+              .col.s2
+                include forms/create-photo
+              .media-manager__manage-img-scroll(
+                :class="imagesContainerClass"
+              )
+                .row
+                  .media-manager__img-container.undraggable(
+                    v-for="image in photos"
+                    :class="imageClass"
+                    v-on:click="chooseImage(image.id)"
+                  )
+                    div(
+                      data-image-url="{{image.thumbnail_url}}"
+                      data-id="{{image.id}}"
+                      data-index="{{$index}}"
+                      class="transition-slow hover-scale-up undraggable media-manager__img-container--position"
+                      v-bind:style="{backgroundImage: 'url(' + image.thumbnail_url +')', height : 100 + '%'}"
+                    )
+              .col.s4
+                .media-manager__manage-img-details(
+                  :class="{'media-manager__manage-img-details--image-is-selected': chosen_image.src !== ''}"
+                )
+                  .row
+                    //- .right.media-manager__back(style="display:none")
+                    .right.media-manager__back() &#10005;
+                    .col.s5
+                      img(:src="chosen_image.src")
+                    .col.s7
+                      span.media-manager__text(v-text="chosen_image.es_title")
+                      span.media-manager__text.media-manager__text--info(
+                        v-if="chosen_image.created_at"
+                        v-text="chosen_image.created_at"
+                      )
+                      include forms/delete-photo
+                  
+                  .row
+                    .col.s12 
+                      .divider
+                  
+                  .row
+                    include forms/update-photo
 
+
+      
       +photo_assoc_form('associate_photo_form', 'POST', 'associateUrl')
 
       +photo_assoc_form('disassociate_photo_form', 'DELETE', 'disassociateUrl')

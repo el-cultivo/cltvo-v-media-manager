@@ -1,11 +1,11 @@
 <link rel="stylesheet" href="http://minaci.cltvo.com/css/admin.css" type="text/css">
-h1 Hola
-form(id="create-file_form" enctype="multipart/form-data" action="/api/save" method="post")
-    input(type="file" form="create-file_form" name="file_input")
-    input(type="text" form="create-file_form" name="desc" value="Hola")
-    div
-        input(type="submit" form="create-file_form" value="Enviar")
-p=photos
+//- h1 Hola
+//- form(id="create-file_form" enctype="multipart/form-data" action="/api/save" method="post")
+//-     input(type="file" form="create-file_form" name="file_input")
+//-     input(type="text" form="create-file_form" name="desc" value="Hola")
+//-     div
+//-         input(type="submit" form="create-file_form" value="Enviar")
+//- p=photos
 //- img(src="/1.jpg")
 
 div#main-vue
@@ -31,10 +31,26 @@ script.
             data: {
                 store: {
                     media_manager: {
+                        trans: {
+                            filter: {
+                                title: 'Filtrar',
+                                placeholder: 'Selecciona un filtro',
+                            },
+                            drag: 'Arrastra la imagen',
+                            search: {
+                                placeholder: 'Buscar'
+                            },
+                            update_form: {
+                                title: 'Título',
+                                alt: 'Texto Alternativo',
+                                description: 'Descripción',
+                            }
+                        },
+
                         routes: {
                             index: 'http://localhost:3000/ajax/photos',
                             sort_photos: 'http://blaa.com/api/photos/sort',
-                            single_image: 'http://blaa.com/api/photos/:id',
+                            single_image: 'http://localhost:3000/ajax/photos/:id',
                             create: 'http://blaa.com/api/photos',
                             update: 'http://blaa.com/api/photos/:id',
                             delete: 'http://blaa.com/api/photos/:id',
